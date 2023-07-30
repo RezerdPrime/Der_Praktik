@@ -52,20 +52,23 @@ mouse_pos = (0, 0)
 PLAY_color = (0, 0, 0)
 EDITOR_color = (0, 0, 0)
 SETTINGS_color = (0, 0, 0)
-pos_flag = -1
+pos_flag = -1 # показатель положения кнопки в меню
 
 
 # SETTINGS =============================================================================================================
 
 resolutions = [(640, 480), (960, 720), (1152, 864), (1600, 900), (1600, 1024), (1920, 1080)]
-current = 1
-at_button = 1
+current = 1 # позиция в resolutions
+at_button = 1 # по сути тоже самое, что и pos_flag, только для настроек
 REZOL_color = (0, 0, 0)
 
 
 # GAME =================================================================================================================
 
-
+overlay2 = pg.Surface((WIDTH, HEIGHT))
+overlay2.set_alpha(0) # просто frontend
+choose = True # выбор между загрузкой своей карты и рандомно сгенерированной
+NO_color = (0,0,0); YES_color = (255,255,255)
 
 
 # HELPING FUNCTIONS ====================================================================================================
@@ -76,3 +79,21 @@ def transitional_animation():
         overlay.set_alpha(1)
         screen.blit(screen, (0, 0))
         pg.display.flip()
+
+
+def menu_interface(PLAY_color, EDITOR_color, SETTINGS_color):
+    pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT - 250) // 2, 171, 70))
+    pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT - 50) // 2, 171, 70))
+    pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT + 150) // 2, 171, 70))
+
+    pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 270) // 2, 174, 70))
+    pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 70) // 2, 174, 70))
+    pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT + 130) // 2, 174, 70))
+
+    text1 = font.render("PLAY", True, PLAY_color)
+    screen.blit(text1, (WIDTH // 2 - 34, HEIGHT // 2 - 110))
+    text1 = font.render("EDITOR", True, EDITOR_color)
+    screen.blit(text1, (WIDTH // 2 - 52, HEIGHT // 2 - 10))
+    text1 = font.render("SETTINGS", True, SETTINGS_color)
+    screen.blit(text1, (WIDTH // 2 - 68, HEIGHT // 2 + 90))
+    screen.blit(screen, (0, 0))
