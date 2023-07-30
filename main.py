@@ -44,29 +44,55 @@ while running:
 
             if event.type == pg.MOUSEBUTTONDOWN:
 
-                if pos_flag == 0: mode = "game"
-                elif pos_flag == 1: mode = "editor"
-                elif pos_flag == 2: mode = "settings"
+                if pos_flag == 0: # На кнопке "Play"
+                    mode = "game"
+                    menu_interface(PLAY_color, EDITOR_color, SETTINGS_color)
+                    overlay2.set_alpha(100)
+                    screen.blit(overlay2, (0, 0))
+
+                    YorN = 0
+                    while choose:
+
+                        pg.draw.rect(screen, WHITE, (WIDTH // 2 - 340, HEIGHT // 2 - 160, 700, 150))
+                        pg.draw.rect(screen, LIGHT_GRAY, (WIDTH // 2 - 350, HEIGHT // 2 - 170, 700, 150))
+                        text3 = font.render("Do you want to load your map?", True, (0, 0, 0))
+                        screen.blit(text3, (WIDTH // 2 - 292, HEIGHT // 2 - 140))
+
+                        text3 = font.render("Yes", True, YES_color)
+                        screen.blit(text3, (WIDTH // 2 - 292, HEIGHT // 2 - 86))
+                        text3 = font.render("No", True, NO_color)
+                        screen.blit(text3, (WIDTH // 2 + 234, HEIGHT // 2 - 86))
+
+                        screen.blit(screen, (0, 0))
+
+                        pg.display.flip()
+                        for ev in pg.event.get(): # Я сам ахуел, что пришлось снова бегать по циклу
+                            if ev.type == pg.KEYDOWN:
+
+                                YorN += 1
+                                if YorN % 2 == 0:
+                                    YES_color = WHITE
+                                    NO_color = BLACK
+                                else:
+                                    YES_color = BLACK
+                                    NO_color = WHITE
+
+                                keys = pg.key.get_pressed()
+                                if keys[pg.K_RETURN]:
+                                    choose = False
+
+                                    if YorN % 2 == 0: #yes
+                                        pass # не готово
+
+                                    #else: тупо идём дальше
+
+                elif pos_flag == 1: mode = "editor" # Соответственно на кнопке "Editor"
+                elif pos_flag == 2: mode = "settings" # На кнопке "Settings"
 
                 transitional_animation()
 
             if mode == "menu":
-
-                pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT - 250) // 2, 171, 70))
-                pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT - 50) // 2, 171, 70))
-                pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT + 150) // 2, 171, 70))
-
-                pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 270) // 2, 174, 70))
-                pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 70) // 2, 174, 70))
-                pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT + 130) // 2, 174, 70))
-
-                text1 = font.render("PLAY", True, PLAY_color)
-                screen.blit(text1, (WIDTH // 2 - 34, HEIGHT // 2 - 110))
-                text1 = font.render("EDITOR", True, EDITOR_color)
-                screen.blit(text1, (WIDTH // 2 - 52, HEIGHT // 2 - 10))
-                text1 = font.render("SETTINGS", True, SETTINGS_color)
-                screen.blit(text1, (WIDTH // 2 - 68, HEIGHT // 2 + 90))
-                screen.blit(screen, (0, 0))
+                menu_interface(PLAY_color, EDITOR_color, SETTINGS_color)
 
 # SETTINGS =============================================================================================================
 
@@ -127,8 +153,12 @@ while running:
 
         elif mode == "game":
 
-            text3 = font.render("Do you want to load your map?", True, (255,255,255))
-            screen.blit(text3, (98, 98))
+            '''text3 = font.render("Do you want to load your map?", True, (255,255,255))
+            screen.blit(text3, (98, 98))'''
+            pass
 
 
     pg.display.flip()
+
+
+# Вот только попробуй сказать мне, что код кринж, я и без тебя это знаю
