@@ -19,6 +19,7 @@ WIDTH = int(config['Screen']['width'])
 HEIGHT = int(config['Screen']['heigth'])
 WINDOW_SIZE = (WIDTH, HEIGHT)
 
+
 # SOME COLORS ==========================================================================================================
 
 WHITE = (255, 255, 255)
@@ -33,6 +34,44 @@ GREEN = (0, 255, 0)
 LIGHT_BLUE = (0, 255, 255)
 BLUE = (0, 0, 255)
 PURPLE = (225, 0, 255)
+
+
+# CLASSES ==============================================================================================================
+
+class Circle:
+    def __init__(self, color, pos, radius):
+        self.color = color
+        self.pos = pos
+        self.radius = radius
+
+    def draw(self, x, y):
+        pg.draw.circle(screen, self.color, (self.pos[0] + x, self.pos[1] + y), self.radius)
+
+
+class Map:
+    def __init__(self):
+        self.obj_list = []
+
+    def add(self, *objs):
+        self.obj_list.extend(objs)
+
+    def __getitem__(self, item):
+        return self.obj_list[item]
+
+    def __iter__(self):
+        return iter(self.obj_list)
+
+    def generate(self):
+        for i in range(HEIGHT * WIDTH // 1000): #'''HEIGHT * WIDTH // 500'''
+            self.add( Circle(
+                (randint(100,250),
+                 randint(100,250),
+                 randint(100,250)),
+            (dx + randint(-2 * WIDTH, WIDTH), dy + randint(-2 * HEIGHT, HEIGHT)), randint(10,50)))
+
+    def draw_all(self, x, y):
+        for i in range(len(self.obj_list)):
+            self.obj_list[i].draw(x, y)
 
 
 # VARIABLES FOR MODES MANAGING =========================================================================================
@@ -69,6 +108,13 @@ overlay2 = pg.Surface((WIDTH, HEIGHT))
 overlay2.set_alpha(0) # просто frontend
 choose = True # выбор между загрузкой своей карты и рандомно сгенерированной
 NO_color = (0,0,0); YES_color = (255,255,255)
+YorN = 0 # флаг показывающий выбор игрока (чётен - No; нечётен - Yes)
+
+dx = 0; dy = 0 # Смещение координат (разница между текущим и предыдущим положениями мыши)
+prevmp = mouse_pos # предыдущее положение мыши
+Map = Map() # аче бы тут не создать один экземпляр класса и не ебать себе мозги?
+already_generated = False # чтобы бесконечно не генерило карту
+mouse_mode = 1 # применяется для скроллинга карты
 
 
 # HELPING FUNCTIONS ====================================================================================================
