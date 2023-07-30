@@ -2,6 +2,7 @@ from Technical_Stuff import *
 
 while running:
 
+    prevmp = mouse_pos
     mouse_pos = pg.mouse.get_pos()
     for event in pg.event.get():
 
@@ -50,7 +51,6 @@ while running:
                     overlay2.set_alpha(100)
                     screen.blit(overlay2, (0, 0))
 
-                    YorN = 0
                     while choose:
 
                         pg.draw.rect(screen, WHITE, (WIDTH // 2 - 340, HEIGHT // 2 - 160, 700, 150))
@@ -81,8 +81,9 @@ while running:
                                 if keys[pg.K_RETURN]:
                                     choose = False
 
-                                    if YorN % 2 == 0: #yes
+                                    if YorN % 2 != 0: #yes
                                         pass # не готово
+                                        # по сути должно вызывать проводник с выбором файла
 
                                     #else: тупо идём дальше
 
@@ -152,10 +153,30 @@ while running:
 # GAME =================================================================================================================
 
         elif mode == "game":
+            #print(YorN)
+            if not already_generated:
 
-            '''text3 = font.render("Do you want to load your map?", True, (255,255,255))
-            screen.blit(text3, (98, 98))'''
-            pass
+                if YorN % 2 == 0:
+                    Map.generate()
+                else: #load the map
+                   Map.generate() # пока пусть будет рандомная генерация
+                already_generated = True
+                #print(Map.obj_list)
+
+            '''if event.type == pg.MOUSEBUTTONDOWN:
+                mode = 2
+
+            if (event.type == pg.MOUSEMOTION) and (mode == 2):
+                x, y = pg.mouse.get_pos()
+                a += x - xbuff
+                b += y - ybuff
+
+            if event.type == pg.MOUSEBUTTONUP:
+                mode = 1'''
+
+
+
+
 
 
     pg.display.flip()
