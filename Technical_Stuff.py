@@ -4,24 +4,27 @@ from random import randint
 from math import *
 
 
-# WINDOW INIT ==========================================================================================================
+# WINDOW INIT ==========================================================
 
 pg.init()
 config = configparser.ConfigParser()
 config.read("config.cfg", encoding="utf-8")
 
-WINDOW_TITLE = map(lambda x: x.strip(), config['Splashes']['splshs'].split(";")); WINDOW_TITLE = list(WINDOW_TITLE)
+WINDOW_TITLE = list(map(lambda x: x.strip(),
+                    config['Splashes']['splshs'].split(";")))
 SPLASHES = WINDOW_TITLE[randint(0, len(WINDOW_TITLE) - 1)]
 pg.display.set_caption(SPLASHES)
-font = pg.font.Font("fnt.otf", 40)
+font40 = pg.font.Font("fnt.otf", 40)
+font28 = pg.font.Font("fnt.otf", 28)
+font20 = pg.font.Font(None, 20)
 
 WIDTH = int(config['Screen']['width'])
-HEIGHT = int(config['Screen']['heigth'])
+HEIGHT = int(config['Screen']['height'])
 WINDOW_SIZE = (WIDTH, HEIGHT)
 
+theme = bool(int(config['Screen']['is_dark']))
 
-# SOME COLORS ==========================================================================================================
-
+# SOME COLORS ==========================================================
 WHITE = (255, 255, 255)
 LIGHT_GRAY = (220, 220, 220)
 GRAY = (125, 125, 125)
@@ -36,110 +39,95 @@ BLUE = (0, 0, 255)
 PURPLE = (225, 0, 255)
 
 
-# CLASSES ==============================================================================================================
-
-class Circle:
-    def __init__(self, color, pos, radius):
-        self.color = color
-        self.pos = pos
-        self.radius = radius
-
-    def draw(self, x, y):
-        pg.draw.circle(screen, self.color, (self.pos[0] + x, self.pos[1] + y), self.radius)
-
-
-class Map:
-    def __init__(self):
-        self.obj_list = []
-
-    def add(self, *objs):
-        self.obj_list.extend(objs)
-
-    def __getitem__(self, item):
-        return self.obj_list[item]
-
-    def __iter__(self):
-        return iter(self.obj_list)
-
-    def generate(self):
-        for i in range(HEIGHT * WIDTH // 1000): #'''HEIGHT * WIDTH // 500'''
-            self.add( Circle(
-                (randint(100,250),
-                 randint(100,250),
-                 randint(100,250)),
-            (dx + randint(-2 * WIDTH, WIDTH), dy + randint(-2 * HEIGHT, HEIGHT)), randint(10,50)))
-
-    def draw_all(self, x, y):
-        for i in range(len(self.obj_list)):
-            self.obj_list[i].draw(x, y)
-
-
-# VARIABLES FOR MODES MANAGING =========================================================================================
+# VARIABLES FOR MODES MANAGING =========================================
 
 screen = pg.display.set_mode(WINDOW_SIZE)
 screen.fill(WHITE)
 overlay = pg.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(0)
 
-mode = "menu" # menu game editor settings
+mode = "menu"  # menu game editor settings
 running = True
+animation_was_played = False
 mouse_pos = (0, 0)
 
 
-# MENU =================================================================================================================
+# MENU =================================================================
 
 PLAY_color = (0, 0, 0)
 EDITOR_color = (0, 0, 0)
 SETTINGS_color = (0, 0, 0)
-pos_flag = -1 # показатель положения кнопки в меню
+pos_flag = -1
 
 
-# SETTINGS =============================================================================================================
+# SETTINGS =============================================================
 
-resolutions = [(640, 480), (960, 720), (1152, 864), (1600, 900), (1600, 1024), (1920, 1080)]
-current = 1 # позиция в resolutions
-at_button = 1 # по сути тоже самое, что и pos_flag, только для настроек
+resolutions = [(640, 480), (800, 600), (960, 720),
+               (1152, 648), (1280, 720), (1540, 790)]
+current = resolutions.index(WINDOW_SIZE)
+at_button = 0
 REZOL_color = (0, 0, 0)
+BACK_color = (0, 0, 0)
 
 
-# GAME =================================================================================================================
-
-overlay2 = pg.Surface((WIDTH, HEIGHT))
-overlay2.set_alpha(0) # просто frontend
-choose = True # выбор между загрузкой своей карты и рандомно сгенерированной
-NO_color = (0,0,0); YES_color = (255,255,255)
-YorN = 0 # флаг показывающий выбор игрока (чётен - No; нечётен - Yes)
-
-dx = 0; dy = 0 # Смещение координат (разница между текущим и предыдущим положениями мыши)
-prevmp = mouse_pos # предыдущее положение мыши
-Map = Map() # аче бы тут не создать один экземпляр класса и не ебать себе мозги?
-already_generated = False # чтобы бесконечно не генерило карту
-mouse_mode = 1 # применяется для скроллинга карты
-
-
-# HELPING FUNCTIONS ====================================================================================================
+# HELPING FUNCTIONS ====================================================
 def transitional_animation():
-    for _ in range(1000):
+    for _ in range(750):
         # print(i)
         screen.blit(overlay, (0, 0))
         overlay.set_alpha(1)
-        screen.blit(screen, (0, 0))
+        # screen.blit(screen, (0, 0))
         pg.display.flip()
 
 
 def menu_interface(PLAY_color, EDITOR_color, SETTINGS_color):
-    pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT - 250) // 2, 171, 70))
-    pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT - 50) // 2, 171, 70))
-    pg.draw.rect(screen, GRAY, ((WIDTH - 146) // 2, (HEIGHT + 150) // 2, 171, 70))
+    butts = [((WIDTH - 185) // 2, (HEIGHT - 255) // 2,
+              200, 80),
+             ((WIDTH - 185) // 2, (HEIGHT - 55) // 2,
+              200, 80),
+             ((WIDTH - 185) // 2, (HEIGHT + 145) // 2,
+              200, 80),
+             ((WIDTH - 200) // 2, (HEIGHT - 270) // 2,
+              200, 80),
+             ((WIDTH - 200) // 2, (HEIGHT - 70) // 2,
+              200, 80),
+             ((WIDTH - 200) // 2, (HEIGHT + 130) // 2,
+              200, 80)]
 
-    pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 270) // 2, 174, 70))
-    pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 70) // 2, 174, 70))
-    pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT + 130) // 2, 174, 70))
-
-    text1 = font.render("PLAY", True, PLAY_color)
-    screen.blit(text1, (WIDTH // 2 - 34, HEIGHT // 2 - 110))
-    text1 = font.render("EDITOR", True, EDITOR_color)
-    screen.blit(text1, (WIDTH // 2 - 52, HEIGHT // 2 - 10))
-    text1 = font.render("SETTINGS", True, SETTINGS_color)
-    screen.blit(text1, (WIDTH // 2 - 68, HEIGHT // 2 + 90))
+    pg.draw.rect(screen, GRAY, butts[0])
+    pg.draw.rect(screen, GRAY, butts[1])
+    pg.draw.rect(screen, GRAY, butts[2])
+    
+    pg.draw.rect(screen, LIGHT_GRAY, butts[3])
+    pg.draw.rect(screen, LIGHT_GRAY, butts[4])
+    pg.draw.rect(screen, LIGHT_GRAY, butts[5])
+    
+    text1 = font40.render("PLAY", True, PLAY_color)
+    screen.blit(text1, ((WIDTH - text1.get_width()) // 2,
+                        (HEIGHT - 240) // 2))
+    text1 = font40.render("EDITOR", True, EDITOR_color)
+    screen.blit(text1, ((WIDTH - text1.get_width()) // 2,
+                        (HEIGHT - 40) // 2))
+    text1 = font40.render("SETTINGS", True, SETTINGS_color)
+    screen.blit(text1, ((WIDTH - text1.get_width()) // 2,
+                        (HEIGHT + 160) // 2))
     screen.blit(screen, (0, 0))
+
+
+def to_theme(*args, theme='light'):
+    assert 1 < len(args) < 5
+    if theme == 'dark':
+        if isinstance(args[0], pg.Color):
+            return 255 - args[0].r, 255 - args[0].g, 255 - args[0].b
+        
+        if len(args) == 1:
+            if len(args[0]) == 3:
+                return tuple(255 - c for c in args[0])
+            elif len(args[0]) == 4:
+                return (360 - args[0][0], 100 - args[0][1],
+                        100 - args[0][2], args[0][3])
+            
+        elif len(args) == 3:
+            return tuple(255 - c for c in args)
+        else:
+            return 360 - args[0], 100 - args[1], 100 - args[2], args[3]
