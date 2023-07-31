@@ -139,7 +139,6 @@ while running:
 # EDITOR ===============================================================================================================
 
         elif mode == "editor":
-            #print("editor")
             screen.fill(WHITE)
 
             pg.draw.rect(screen, LIGHT_GRAY, ((WIDTH - 174) // 2, (HEIGHT - 270) // 2, 174, 70))
@@ -161,22 +160,6 @@ while running:
                 else: #load the map
                    Map.generate() # пока пусть будет рандомная генерация
                 already_generated = True
-                #print(Map.obj_list)
-
-            '''if event.type == pg.MOUSEBUTTONDOWN:
-                mode = 2
-
-            if (event.type == pg.MOUSEMOTION) and (mode == 2):
-                x, y = pg.mouse.get_pos()
-                a += x - xbuff
-                b += y - ybuff
-
-            if event.type == pg.MOUSEBUTTONUP:
-                mode = 1'''
-
-
-
-
 
 
     pg.display.flip()
