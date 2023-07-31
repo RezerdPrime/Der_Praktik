@@ -243,7 +243,7 @@ def load_data():
     while True:
         file_path = ""
         try:
-            while ".txt" != file_path[-5:][:-1] or file_path.count(".txt") != 1:
+            while ".gpht" != file_path[-6:-1] or file_path.count(".gpht") != 1:
                 file_path = paste()
 
             info = open(file_path.strip('"'), "r", encoding='utf-8').read()
@@ -256,7 +256,7 @@ def load_data():
 
 def convert_data(data : list):
     for tupl in data:
-        if len(tupl) == 6 and tupl[-1] * prod(tupl[i] for i in range(3)) >= 0:
+        if len(tupl) == 6 and all([tupl[-1] >= 0] + [tupl[i] >= 0 for i in range(3)]) >= 0:
             Mappy.add(Circle((tupl[:3]), (tupl[3:-1]), tupl[-1]))
 
 def draw_map(x, y, func):
