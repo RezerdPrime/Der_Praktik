@@ -188,7 +188,7 @@ while running:
                 Teams[1].generate(helpMap)
 
             cur_player = Teams[step % 2].obj_list[randint(0, player_count - 1)]
-            Mappy.add(Circle(BLACK, (0, 0), 10))
+            #Mappy.add(Circle(BLACK, (0, 0), 10))
             dx -= cur_player.pos[0]
             dy -= cur_player.pos[1]
 
@@ -221,8 +221,9 @@ while running:
                         keys = pg.key.get_pressed()
 
                         if keys[pg.K_RETURN]:
-                            cur_player.attack(dx + cur_player.pos[0], dy + cur_player.pos[1], func)
+                            cur_player.attack(dx, dy, func)
                             func = ""
+
                             '''try:
                                 Plot(func)
                                 print(mappy.obj_list)
