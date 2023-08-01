@@ -111,18 +111,17 @@ class Player:
 
     def attack(self, x, y, func):
         val = 0; cur = 0; indx = len(Mappy.obj_list)
-        print((func.replace("x",str(val / 20))))
+        print(func)
         buff = -eval(func.replace("x",str(val / 20)))
 
         for _ in range(1500):
-            pg.time.delay(2)
+            pg.time.delay(3)
             val += 1
             cur = -int(40 * eval(func.replace("x",str(val / 40))))
-            #print((val-1, buff), (val, cur))
 
-            Mappy.add(Line((val-1, buff), (val, cur)))
-            draw_map(dx - val, dy - cur, func)
-            #pg.draw.line(screen, BLACK, (val - 1 + x, buff + y), (val + x, cur + y), 3)
+            Mappy.add(Line((val - 1 - x + WIDTH // 2, buff - y + HEIGHT // 2), (val - x + WIDTH // 2, cur - y + HEIGHT // 2)))
+            draw_map(x - val, y - cur, func)
+
             buff = cur
         Mappy.obj_list = Mappy.obj_list[:indx]
 
@@ -264,6 +263,7 @@ def draw_map(x, y, func):
     Teams[1].draw_all(x, y)
     text_surface = func_font.render(func, True, (0, 0, 0))
     screen.blit(text_surface, (18, HEIGHT - 48))
+    #pg.draw.circle(screen, BLACK, (WIDTH // 2, HEIGHT // 2), 5) добавить флаг
     pg.display.flip()
 
 
