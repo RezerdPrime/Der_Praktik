@@ -14,15 +14,15 @@ config.read("config.cfg", encoding="utf-8")
 
 WINDOW_TITLE = list(map(lambda x: x.strip(),
                     config['Splashes']['splshs'].split(";")))
-#theme = bool(int(config['Screen']['is_dark']))
+#theme = bool(int(config['Settings']['is_dark']))
 SPLASHES = WINDOW_TITLE[randint(0, len(WINDOW_TITLE) - 1)]
 pg.display.set_caption(SPLASHES)
 font40 = pg.font.Font("fnt.otf", 40)
 font28 = pg.font.Font("fnt.otf", 28)
 font20 = pg.font.Font(None, 20)
 
-WIDTH = int(config['Screen']['width'])
-HEIGHT = int(config['Screen']['heigth'])
+WIDTH = int(config['Settings']['width'])
+HEIGHT = int(config['Settings']['height'])
 WINDOW_SIZE = (WIDTH, HEIGHT)
 player_count = int(ceil((WIDTH * HEIGHT / (WIDTH + HEIGHT)) ** 0.3))
 
@@ -67,6 +67,15 @@ class Circle:
         pg.draw.circle(sc, self.color, (self.pos[0] + x, self.pos[1] + y), self.radius)
 
 
+class Line:
+    def __init__(self, startpos, endpos):
+        self.startpos = startpos
+        self.endpos = endpos
+
+    def draw(self, x, y):
+        pg.draw.line(screen, BLACK, (self.startpos[0] + x, self.startpos[1] + y), (self.endpos[0] + x, self.endpos[1] + y), 3)
+
+
 class Map:
     def __init__(self):
         self.obj_list = []
@@ -100,35 +109,28 @@ class Player:
     def draw(self, x, y):
         pg.draw.circle(screen, self.team, (self.pos[0] + x, self.pos[1] + y), 20)
 
-    '''def attack(self, x, y, func):
-        val = 0; cur = 0
-        buff = eval(func.replace("x",str(val / 20)))
+    def attack(self, x, y, func):
+        val = 0; cur = 0; indx = len(Mappy.obj_list)
+        print((func.replace("x",str(val / 20))))
+        buff = -eval(func.replace("x",str(val / 20)))
 
-        for _ in range(100):
+        for _ in range(1500):
+            pg.time.delay(2)
             val += 1
-            cur = 20 * eval(func.replace("x",str(val / 20)))
-            print(cur)
-            pg.draw.line(screen, BLACK, (val - 1, buff), (val, cur), 3)
+            cur = -int(40 * eval(func.replace("x",str(val / 40))))
+            #print((val-1, buff), (val, cur))
+
+            Mappy.add(Line((val-1, buff), (val, cur)))
+            draw_map(dx - val, dy - cur, func)
+            #pg.draw.line(screen, BLACK, (val - 1 + x, buff + y), (val + x, cur + y), 3)
             buff = cur
-            screen.blit(screen, (0, 0))'''
+        Mappy.obj_list = Mappy.obj_list[:indx]
 
-
-
-
-class Team:
+class Team(Map):
 
     def __init__(self, col : pg.Color):
-        self.player_list = []
+        super().__init__()
         self.col = col
-
-    def add(self, *objs):
-        self.player_list.extend(objs)
-
-    def __getitem__(self, item):
-        return self.player_list[item]
-
-    def __iter__(self):
-        return iter(self.player_list)
 
     def generate(self, mappy: Map):
         pc_buff = player_count
@@ -148,10 +150,6 @@ class Team:
                 self.add(Player(gen_pos, self.col))
                 mappy.add(Player(gen_pos, self.col))
                 pc_buff -= 1
-
-    def draw_all(self, x, y):
-        for i in range(len(self.player_list)):
-            self.player_list[i].draw(x, y)
 
 
 # MENU =================================================================================================================
@@ -204,7 +202,7 @@ def transitional_animation():
 
 
 def menu_interface(PLAY_color, EDITOR_color, SETTINGS_color):
-    butts = [((WIDTH - 185) // 2, (HEIGHT - 255) // 2,
+    butns = [((WIDTH - 185) // 2, (HEIGHT - 255) // 2,
               200, 80),
              ((WIDTH - 185) // 2, (HEIGHT - 55) // 2,
               200, 80),
@@ -217,13 +215,13 @@ def menu_interface(PLAY_color, EDITOR_color, SETTINGS_color):
              ((WIDTH - 200) // 2, (HEIGHT + 130) // 2,
               200, 80)]
 
-    pg.draw.rect(screen, GRAY, butts[0])
-    pg.draw.rect(screen, GRAY, butts[1])
-    pg.draw.rect(screen, GRAY, butts[2])
+    pg.draw.rect(screen, GRAY, butns[0])
+    pg.draw.rect(screen, GRAY, butns[1])
+    pg.draw.rect(screen, GRAY, butns[2])
 
-    pg.draw.rect(screen, LIGHT_GRAY, butts[3])
-    pg.draw.rect(screen, LIGHT_GRAY, butts[4])
-    pg.draw.rect(screen, LIGHT_GRAY, butts[5])
+    pg.draw.rect(screen, LIGHT_GRAY, butns[3])
+    pg.draw.rect(screen, LIGHT_GRAY, butns[4])
+    pg.draw.rect(screen, LIGHT_GRAY, butns[5])
 
     text1 = font40.render("PLAY", True, PLAY_color)
     screen.blit(text1, ((WIDTH - text1.get_width()) // 2,
