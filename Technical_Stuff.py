@@ -131,9 +131,13 @@ class Player:
             buff = cur
 
         Mappy.obj_list = Mappy.obj_list[:indx]
-        Mappy.add(Circle(WHITE, (val - x + WIDTH // 2, cur - y + HEIGHT // 2), 30))
+        detonated_pos = (val - x + WIDTH // 2, cur - y + HEIGHT // 2)
 
-        draw_map(x - val, y - cur, func, 0, func_speed, True)
+        kill_players(detonated_pos)
+
+        Mappy.add(Circle(WHITE, detonated_pos, 30))
+
+        draw_map(x - val, y - cur, func, 0, fs, True)
         pg.draw.circle(screen, WHITE, (WIDTH // 2, HEIGHT // 2), 30)
         screen.blit(screen, (0,0))
         pg.display.flip()
@@ -141,10 +145,9 @@ class Player:
 
 class Team(Map):
 
-    def __init__(self, col : pg.Color, pl_count = player_count):
+    def __init__(self, col : pg.Color):
         super().__init__()
         self.col = col
-        self.pl_count = pl_count
 
     def generate(self, mappy: Map):
         pc_buff = player_count
@@ -271,10 +274,12 @@ def load_data():
 
         except SyntaxError: continue
 
+
 def convert_data(data : list):
     for tupl in data:
         if len(tupl) == 6 and all([tupl[-1] >= 0] + [tupl[i] >= 0 for i in range(3)]) >= 0:
             Mappy.add(Circle((tupl[:3]), (tupl[3:-1]), tupl[-1]))
+
 
 def draw_map(x, y, func, speed_choice, fs=func_speed, flag = False):
     screen.fill(WHITE)
@@ -318,6 +323,27 @@ def is_not_collided():
                [screen.get_at((WIDTH // 2, HEIGHT // 2)) in avaliable_colors]
 
     return all(flag_lst)
+
+
+def kill_players(det_pos):
+
+    dist = lambda P, Q: ((P[0] - Q[0])**2 + (P[1] - Q[1])**2)**.5
+
+    dist_lst = [[],[]]
+    dist_lst[0] = [dist(pl.pos, det_pos) for pl in Teams[0].obj_list]
+    dist_lst[1] = [dist(pl.pos, det_pos) for pl in Teams[1].obj_list]
+    #print(dist_lst)
+
+    for k in [0, 1]:
+        for i in range(len(dist_lst[k])):
+            if dist_lst[k][i] <= 50:
+                Teams[k].obj_list.remove(Teams[k].obj_list[i])
+
+    #print("Successful")
+
+
+    '''print( *[dist(pl.pos, det_pos) for pl in Teams[0].obj_list] )
+    print( *[dist(pl.pos, det_pos) for pl in Teams[1].obj_list] )'''
 
 
 '''def to_theme(*args, theme='light'):
