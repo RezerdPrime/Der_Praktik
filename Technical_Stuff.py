@@ -149,7 +149,12 @@ class Player:
             buff = cur
 
         Mappy.obj_list = Mappy.obj_list[:indx]
-        Mappy.add(Circle(WHITE, (val - x + WIDTH // 2, cur - y + HEIGHT // 2), 30))
+        detonated_pos = (val - x + WIDTH // 2, cur - y + HEIGHT // 2)
+
+        kill_players(detonated_pos)
+        self.kills += kill_players(detonated_pos)
+
+        Mappy.add(Circle(WHITE, detonated_pos, 30))
 
         draw_map(x - val, y - cur, func, 0, fs, True)
         pg.draw.circle(screen, WHITE, (WIDTH // 2, HEIGHT // 2), 30)
