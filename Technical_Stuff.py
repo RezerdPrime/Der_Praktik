@@ -5,19 +5,18 @@ from math import *
 from clipboard import paste
 from os import system
 
-
-# WINDOW INIT ==========================================================================================================
+# WINDOW INIT ==========================================================
 
 pg.init()
 config = configparser.ConfigParser()
 config.read("config.cfg", encoding="utf-8")
-
 WINDOW_TITLE = list(map(lambda x: x.strip(),
                     config['Splashes']['splshs'].split(";")))
-#theme = bool(int(config['Settings']['is_dark']))
+# THEME = bool(int(config['Settings']['is_dark']))
 SPLASHES = WINDOW_TITLE[randint(0, len(WINDOW_TITLE) - 1)]
 pg.display.set_caption(SPLASHES)
 font40 = pg.font.Font("fnt.otf", 40)
+font32 = pg.font.Font("fnt.otf", 32)
 font28 = pg.font.Font("fnt.otf", 28)
 font20 = pg.font.Font(None, 20)
 
@@ -27,7 +26,7 @@ WINDOW_SIZE = (WIDTH, HEIGHT)
 player_count = int(ceil((WIDTH * HEIGHT / (WIDTH + HEIGHT)) ** 0.3))
 
 
-# SOME COLORS ==========================================================================================================
+# SOME COLORS ==========================================================
 
 WHITE = (255, 255, 255)
 LIGHT_GRAY = (220, 220, 220)
@@ -43,19 +42,21 @@ BLUE = (0, 0, 255)
 PURPLE = (225, 0, 255)
 
 
-# VARIABLES FOR MODES MANAGING =========================================================================================
+# VARIABLES FOR MODES MANAGING =========================================
 
 screen = pg.display.set_mode(WINDOW_SIZE)
 screen.fill(WHITE)
 overlay = pg.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(0)
 
-mode = "game" # menu game editor settings
+mode = "menu" # menu game editor settings
 running = True
 mouse_pos = (0, 0)
+func_speed = 2
+fs_list = [0.25, 0.5, 0.75, 1, 2, 4, 8]
 
 
-# CLASSES ==============================================================================================================
+# CLASSES ==============================================================
 
 class Circle:
     def __init__(self, color, pos, radius):
@@ -64,7 +65,8 @@ class Circle:
         self.radius = radius
 
     def draw(self, x, y, sc = screen):
-        pg.draw.circle(sc, self.color, (self.pos[0] + x, self.pos[1] + y), self.radius)
+        pg.draw.circle(sc, self.color,
+                       (self.pos[0] + x, self.pos[1] + y), self.radius)
 
 
 class Line:
@@ -73,7 +75,9 @@ class Line:
         self.endpos = endpos
 
     def draw(self, x, y):
-        pg.draw.line(screen, BLACK, (self.startpos[0] + x, self.startpos[1] + y), (self.endpos[0] + x, self.endpos[1] + y), 3)
+        pg.draw.line(screen, BLACK,
+                     (self.startpos[0] + x, self.startpos[1] + y),
+                     (self.endpos[0] + x, self.endpos[1] + y), 3)
 
 
 class Map:
@@ -92,8 +96,10 @@ class Map:
     def generate(self):
         for i in range(HEIGHT * WIDTH // 1000): #'''HEIGHT * WIDTH // 500'''
             self.add( Circle(
-                (randint(150,255), randint(150,255),randint(150,255)),
-            (dx + randint(-2 * WIDTH, WIDTH), dy + randint(-2 * HEIGHT, HEIGHT)), randint(10,50)))
+                (randint(150,255),
+                 randint(150,255),randint(150,255)),
+            (dx + randint(-2 * WIDTH, WIDTH),
+             dy + randint(-2 * HEIGHT, HEIGHT)), randint(10,50)))
 
     def draw_all(self, x, y, sc = screen):
         for i in range(len(self.obj_list)):
@@ -101,49 +107,57 @@ class Map:
 
 
 class Player:
-
     def __init__(self, pos, team : pg.Color):
         self.pos = pos
         self.team = team
 
     def draw(self, x, y):
-        pg.draw.circle(screen, self.team, (self.pos[0] + x, self.pos[1] + y), 20)
+        pg.draw.circle(screen, self.team,
+                       (self.pos[0] + x, self.pos[1] + y), 20)
 
-    def attack(self, x, y, func):
+    def attack(self, x, y, func, fs=func_speed):
         val = 0; cur = 0; indx = len(Mappy.obj_list)
-        print(func)
-        buff = -eval(func.replace("x",str(val / 20)))
+        buff = -40 * eval(func.replace("x", str(val / 40)))
 
-        for _ in range(1500):
-            pg.time.delay(3)
+        for _ in range(800):
+            pg.time.delay(round(4 / fs_list[fs]))
             val += 1
-            cur = -int(40 * eval(func.replace("x",str(val / 40))))
+            cur = -int(40 * eval(func.replace("x", str(val / 40))))
+            # print((val-1, buff), (val, cur))
 
-            Mappy.add(Line((val - 1 - x + WIDTH // 2, buff - y + HEIGHT // 2), (val - x + WIDTH // 2, cur - y + HEIGHT // 2)))
-            draw_map(x - val, y - cur, func, True)
-
+            Mappy.add(Line((val - 1 - x + WIDTH // 2,
+                            buff - y + HEIGHT // 2),
+                           (val - x + WIDTH // 2,
+                            cur - y + HEIGHT // 2)))
+            draw_map(x - val, y - cur, func, 0, fs)
+            # pg.draw.line(screen, BLACK,
+            # (val - 1 + x, buff + y), (val + x, cur + y), 3)
             buff = cur
+            
         Mappy.obj_list = Mappy.obj_list[:indx]
 
-class Team(Map):
 
-    def __init__(self, col : pg.Color):
+class Team(Map):
+    def __init__(self, col: pg.Color):
         super().__init__()
         self.col = col
 
     def generate(self, mappy: Map):
         pc_buff = player_count
         newsc = pg.display.set_mode(WINDOW_SIZE)
-        #Map.draw_all()
+        # Map.draw_all()
 
         while pc_buff:
-            gen_pos = (dx + randint(-2 * WIDTH, WIDTH), dy + randint(-2 * HEIGHT, HEIGHT))
+            gen_pos = (dx + randint(-2 * WIDTH, WIDTH),
+                       dy + randint(-2 * HEIGHT, HEIGHT))
             newsc.fill(WHITE)
             mappy.draw_all(dx - gen_pos[0], dy - gen_pos[1], newsc)
 
-            flag_lst = [ WHITE == newsc.get_at(
-                (dx + int(ceil(20 * cos(pi * k / 4))), dy + int(ceil(20 * sin(pi * k / 4))))
-            ) for k in range(8)] + [WHITE == newsc.get_at((dx, dy))]
+            flag_lst = ([WHITE == newsc.get_at(
+                (dx + int(ceil(20 * cos(pi * k / 4))),
+                 dy + int(ceil(20 * sin(pi * k / 4)))))
+                         for k in range(8)]
+                        + [WHITE == newsc.get_at((dx, dy))])
 
             if all(flag_lst):
                 self.add(Player(gen_pos, self.col))
@@ -151,15 +165,14 @@ class Team(Map):
                 pc_buff -= 1
 
 
-# MENU =================================================================================================================
+# MENU =================================================================
 
 PLAY_color = (0, 0, 0)
 EDITOR_color = (0, 0, 0)
 SETTINGS_color = (0, 0, 0)
-pos_flag = -1 # показатель положения кнопки в меню
+pos_flag = -1  # показатель положения кнопки в меню
 
-
-# SETTINGS =============================================================================================================
+# SETTINGS =============================================================
 
 resolutions = [(640, 480), (800, 600), (960, 720),
                (1152, 648), (1280, 720), (1540, 790)]
@@ -172,7 +185,7 @@ BACK_color = (0, 0, 0)
 FPS_color = (0, 0, 0)
 FPS = fps_list.index(int(config['Settings']['fps']))
 
-# GAME =================================================================================================================
+# GAME =================================================================
 
 overlay2 = pg.Surface((WIDTH, HEIGHT))
 overlay2.set_alpha(0) # просто frontend
@@ -184,17 +197,16 @@ dx = WIDTH // 2; dy = HEIGHT // 2 # Смещение координат (раз�
 prevmp = mouse_pos # предыдущее положение мыши
 Mappy = Map()
 already_generated = False # чтобы бесконечно не генерило карту
-mouse_mode = False # применяется для скроллинга карты
+mouse_mode = 0 # применяется для скроллинга карты
 
 Teams = [Team(RED), Team(BLUE)]
 step = randint(0, 1)
 helpMap = Map()
 func = ""
 func_font = pg.font.Font("fnt.otf", 30)
-avaliable_colors = [Teams[step % 2].col, WHITE, BLACK]
 
 
-# HELPING FUNCTIONS ====================================================================================================
+# HELPING FUNCTIONS ====================================================
 
 def transitional_animation():
     for _ in range(1000):
@@ -205,23 +217,16 @@ def transitional_animation():
 
 
 def menu_interface(PLAY_color, EDITOR_color, SETTINGS_color):
-    butns = [((WIDTH - 185) // 2, (HEIGHT - 255) // 2,
-              200, 80),
-             ((WIDTH - 185) // 2, (HEIGHT - 55) // 2,
-              200, 80),
-             ((WIDTH - 185) // 2, (HEIGHT + 145) // 2,
-              200, 80),
-             ((WIDTH - 200) // 2, (HEIGHT - 270) // 2,
-              200, 80),
-             ((WIDTH - 200) // 2, (HEIGHT - 70) // 2,
-              200, 80),
-             ((WIDTH - 200) // 2, (HEIGHT + 130) // 2,
-              200, 80)]
+    butns = [((WIDTH - 185) // 2, (HEIGHT - 255) // 2, 200, 80),
+             ((WIDTH - 185) // 2, (HEIGHT - 55) // 2, 200, 80),
+             ((WIDTH - 185) // 2, (HEIGHT + 145) // 2, 200, 80),
+             ((WIDTH - 200) // 2, (HEIGHT - 270) // 2, 200, 80),
+             ((WIDTH - 200) // 2, (HEIGHT - 70) // 2, 200, 80),
+             ((WIDTH - 200) // 2, (HEIGHT + 130) // 2, 200, 80)]
 
     pg.draw.rect(screen, GRAY, butns[0])
     pg.draw.rect(screen, GRAY, butns[1])
     pg.draw.rect(screen, GRAY, butns[2])
-
     pg.draw.rect(screen, LIGHT_GRAY, butns[3])
     pg.draw.rect(screen, LIGHT_GRAY, butns[4])
     pg.draw.rect(screen, LIGHT_GRAY, butns[5])
@@ -255,23 +260,41 @@ def load_data():
 
         except SyntaxError: continue
 
+
 def convert_data(data : list):
     for tupl in data:
-        if len(tupl) == 6 and all([tupl[-1] >= 0] + [tupl[i] >= 0 for i in range(3)]) >= 0:
+        if len(tupl) == 6 and all([tupl[-1] >= 0]
+                                  + [tupl[i] >= 0
+                                     for i in range(3)]) >= 0:
             Mappy.add(Circle((tupl[:3]), (tupl[3:-1]), tupl[-1]))
 
-def draw_map(x, y, func, flag = False):
+
+def draw_map(x, y, func, speed_choice, fs=func_speed):
     screen.fill(WHITE)
     Mappy.draw_all(x, y)
     Teams[0].draw_all(x, y)
     Teams[1].draw_all(x, y)
 
-    text_surface = func_font.render('f(x) = ' + func, True, (0, 0, 0))
-    screen.blit(text_surface, (50, HEIGHT - 68))
+    text_surface = font32.render('f(x) = ' + func, True, BLACK)
+    screen.blit(text_surface, (50, HEIGHT - 70))
     pg.draw.rect(screen, BLACK, (30, HEIGHT - 80, WIDTH - 60, 60), 3)
-
-    if flag:
-        pg.draw.circle(screen, BLACK, (WIDTH // 2, HEIGHT // 2), 5)
+    
+    LEFTARROW = (BLACK, )
+    RIGHTARROW = (BLACK, )
+    if speed_choice == 1:
+        LEFTARROW = (WHITE, LIGHT_BLUE)
+    elif speed_choice == 2:
+        RIGHTARROW = (WHITE, LIGHT_BLUE)
+    
+    text_surface = font28.render('Speed:', True, BLACK)
+    screen.blit(text_surface, (WIDTH - 140, 20))
+    text_surface = font28.render(' < ', True, *LEFTARROW)
+    screen.blit(text_surface, (WIDTH - 170, 60))
+    text_surface = font28.render(f'x{fs_list[fs]: <4}',
+                                 True, BLACK)
+    screen.blit(text_surface, (WIDTH - 130, 60))
+    text_surface = font28.render(' > ', True, *RIGHTARROW)
+    screen.blit(text_surface, (WIDTH - 50, 60))
 
     pg.display.flip()
 
