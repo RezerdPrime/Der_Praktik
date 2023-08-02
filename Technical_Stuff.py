@@ -4,6 +4,7 @@ from random import randint
 from math import *
 from clipboard import paste
 from os import system
+from sys import exc_info
 
 
 # WINDOW INIT ==========================================================================================================
