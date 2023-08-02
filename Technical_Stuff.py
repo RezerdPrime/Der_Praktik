@@ -117,31 +117,45 @@ class Player:
 
     def attack(self, x, y, func, func_dir, fs = func_speed):
         val = 0; cur = 0; indx = len(Mappy.obj_list)
-        buff = -eval(func.replace("x",str(val / 20)))
-
+        avaliable_colors[0] = self.team
+        # buff = -eval(func.replace("x", str(val / 20)))
+        buff = evaluated_value(func, val)
+        
+        # print(buff, lasterr)
+        if isinstance(buff, str):
+            while ((isinstance(buff, str) and
+                   lasterr in ("Complex", "Value", "ZeroDiv"))
+                   and abs(val) < 1000):
+                val += func_dir
+                buff = evaluated_value(func, val)
+                
+            if val == 1000:  # lasterr not in ("Complex", "Value", "ZeroDiv"):
+                val = func_dir * 21
+                draw_map(x - val, y - cur, func, 0, fs, True)
+        
         while is_not_collided():
             pg.time.delay(round(4 / fs_list[fs]))
             val += func_dir
-            cur = -int(40 * eval(func.replace("x",str(val / 40))))
-
-            Mappy.add(Line((val - 1 - x + WIDTH // 2, buff - y + HEIGHT // 2),
-                           (val - x + WIDTH // 2, cur - y + HEIGHT // 2)))
+            cur = evaluated_value(func, val)
+            if isinstance(cur, str):
+                cur = 0
+                break
+            
+            Mappy.add(Line((val - 1 - x + WIDTH // 2,
+                            buff - y + HEIGHT // 2),
+                     (val - x + WIDTH // 2, cur - y + HEIGHT // 2)))
             draw_map(x - val, y - cur, func, 0, fs, True)
-
             buff = cur
 
         Mappy.obj_list = Mappy.obj_list[:indx]
-        detonated_pos = (val - x + WIDTH // 2, cur - y + HEIGHT // 2)
-
-        self.kills += kill_players(detonated_pos)
-
-        Mappy.add(Circle(WHITE, detonated_pos, 30))
+        Mappy.add(Circle(WHITE, (val - x + WIDTH // 2, cur - y + HEIGHT // 2), 30))
 
         draw_map(x - val, y - cur, func, 0, fs, True)
         pg.draw.circle(screen, WHITE, (WIDTH // 2, HEIGHT // 2), 30)
-        screen.blit(screen, (0,0))
+        screen.blit(screen, (0, 0))
         pg.display.flip()
         pg.time.delay(1500)
+
 
 class Team(Map):
 
@@ -213,6 +227,15 @@ func = ""
 func_font = pg.font.Font("fnt.otf", 30)
 avaliable_colors = [Teams[step % 2].col, WHITE, BLACK]
 func_dir = 1
+xxx = ("max", "exp", "frexp", "ldexp")
+fconvert = {"arcsin": "asin", "arccos": "acos", "arctg": "atan",
+            "arcctg": "pi/2 - atan", "tg": "tan", "ctg": "1/tan",
+            "^": "**", "ln(": "log(e, "}
+you_god_damn_right = tuple(("abs ceil gcd lcm trunc log log2 "
+                            "log10 pow sqrt sin cos gamma lgamma pi e "
+                            "tau sum round for in range i j k t s u v "
+                            "+ - ** * // / % , ( )").split())
+lasterr = ""
 
 
 # ENDSCREEN ============================================================================================================
@@ -294,9 +317,14 @@ def draw_map(x, y, func, speed_choice, fs=func_speed, flag = False):
     Teams[0].draw_all(x, y)
     Teams[1].draw_all(x, y)
 
-    text_surface = func_font.render('f(x) = ' + func, True, (0, 0, 0))
+    text_surface = func_font.render('f(x) = ' + func, True, BLACK)
     screen.blit(text_surface, (50, HEIGHT - 68))
     pg.draw.rect(screen, BLACK, (30, HEIGHT - 80, WIDTH - 60, 60), 3)
+    
+    error = evaluated_value(func, 0)
+    if func and isinstance(error, str):
+        text_surface = font28.render(error, True, RED)
+        screen.blit(text_surface, (WIDTH - 400, HEIGHT - 68))
 
     LEFTARROW = (BLACK,)
     RIGHTARROW = (BLACK,)
@@ -330,6 +358,84 @@ def is_not_collided():
                [screen.get_at((WIDTH // 2, HEIGHT // 2)) in avaliable_colors]
 
     return all(flag_lst)
+
+
+def evaluated_value(func: str, val):
+    global lasterr
+    for f in xxx:
+        if f in func:
+            func = func.replace(f, f[:f.index('x')] + " "
+                                + f[f.index('x') + 1:])
+        
+    func = func.replace("x", str(val / 40))
+    for f in xxx:
+        fx = f[:f.index('x')] + " " + f[f.index('x') + 1:]
+        func = func.replace(fx, f)
+    
+    func = func.replace('^', '**')
+    
+    for f in fconvert:
+        func = func.replace(f, fconvert[f])
+    
+    try:
+        if '|' in func:
+            if func.count('|') % 2 == 0:
+                func = func.replace("|", "abs(",
+                                    func.count('|') // 2)
+                func = func.replace("|", ")")
+            else:
+                raise SyntaxError("unmatched '|' (1 line)")
+        
+        # Проверка на допустимые слова и символы
+        fnc = func
+        for x in (list(xxx) + list(fconvert.values())
+                  + list(you_god_damn_right)):
+            fnc = fnc.replace(x, " ")
+        
+        for c in fnc:
+            if c not in "01234567890. \t\r":
+                raise SyntaxError("Undefined syntax (1 line)")
+                
+        return -int(40 * eval(func))
+    except (ZeroDivisionError, NameError):
+        lasterr = "ZeroDiv" if 'Zero' in str(exc_info()[0]) else "Name"
+        return str(exc_info()[1])
+    except SyntaxError:
+        lasterr = "Syntax"
+        return str(exc_info()[1])[:str(exc_info()[1]).index(' (')]
+    except TypeError:
+        lasterr = "Type"
+        if 'complex' in str(exc_info()[1]):
+            return "Complex numbers are forbidden!"
+            
+        return str(exc_info()[1])
+    except ValueError:
+        lasterr = "Value"
+        return "Forbidden value!"
+
+
+# print(evaluated_value('-x', 1))  # 1
+# print(evaluated_value('1/x', 0))  # ZrDvE
+# print(evaluated_value('log(x, 1)', 80))  # ZrDvE
+# print(evaluated_value('log(1, x)', 0))  # VlE
+# print(evaluated_value('e^x', 1))  # TpE
+# print(evaluated_value('x**0.67', -1))  # 3
+# print(evaluated_value('0**x', 0))  # -40
+# print(evaluated_value('sin(x)**cos(x)', -pi / 3))  # TpE
+# print(evaluated_value('sin(x)**cos(x)', 100 * pi / 3))  # -72
+# print(evaluated_value('tgamma(x)', 1))  # NmE
+# print(evaluated_value('tan(x)', 20 * pi))  # -653249574127814784
+# print(evaluated_value('min(-x**2, 1)', 40))  # 40
+# print(evaluated_value('arcctg(x)', 0))  # VlE
+# print(evaluated_value('log(e, x)', -40))  # VlE
+# print(evaluated_value('(1/x)**-1', 0))  # ZrDvE
+# print(evaluated_value('gamma(x)', 0))  # VlE
+# print(evaluated_value('exp(x)', 2))  # SnE
+# print(evaluated_value('|ln(x)|', 80))
+# print(evaluated_value('', 1))  # SnE
+# print(evaluated_value('(-x)**1.75', 2))  # TpE
+# print(evaluated_value('"5" + ""', 1))
+# -5555555555555555555555555555555555555555
 
 
 def kill_players(det_pos):
