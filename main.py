@@ -9,11 +9,10 @@ while running:
         if event.type == pg.QUIT:
             running = False
 
-
 # MENU =================================================================================================================
 
         if mode == "menu":
-            #print("menu")
+            # print("menu")
             screen.fill(WHITE)
             if (WIDTH - 200) // 2 < mouse_pos[0] < WIDTH // 2 + 100:
                 if (HEIGHT - 270) // 2 < mouse_pos[1] < (HEIGHT - 270) // 2 + 80:
@@ -40,9 +39,8 @@ while running:
                 SETTINGS_color = (0, 0, 0)
                 pos_flag = -1
 
-
             if event.type == pg.MOUSEBUTTONDOWN:
-                if pos_flag == 0: # На кнопке "Play"
+                if pos_flag == 0:  # На кнопке "Play"
                     mode = "game"
                     menu_interface(PLAY_color, EDITOR_color, SETTINGS_color)
                     overlay2.set_alpha(100)
@@ -79,11 +77,13 @@ while running:
                                 keys = pg.key.get_pressed()
                                 if keys[pg.K_RETURN]:
                                     choose = False
-                                    
+
                         pg.time.Clock().tick(fps_list[FPS])
 
-                elif pos_flag == 1: mode = "editor" # Соответственно на кнопке "Editor"
-                elif pos_flag == 2: mode = "settings" # На кнопке "Settings"
+                elif pos_flag == 1:
+                    mode = "editor"  # Соответственно на кнопке "Editor"
+                elif pos_flag == 2:
+                    mode = "settings"  # На кнопке "Settings"
 
                 if pos_flag != -1: transitional_animation()
 
@@ -102,18 +102,18 @@ while running:
                                   + str(resolutions[current][1]),
                                   True, REZOL_color)
             screen.blit(text2, (95, 85))
-            
+
             text2 = font20.render(
                 "All changes occur after restarting the game!",
                 True, RED)
             screen.blit(text2, (75, HEIGHT - 75))
-            
+
             pg.draw.rect(screen, LIGHT_GRAY, (75, 165, 500, 70))
             text2 = font40.render("FPS" + " " * 23
                                   + f'{fps_list[FPS]: >4}',
                                   True, FPS_color)
             screen.blit(text2, (95, 175))
-            
+
             # Кнопка возврата обратно в меню
             pg.draw.rect(screen, GRAY,
                          (WIDTH - 195, HEIGHT - 145, 120, 70))
@@ -148,7 +148,7 @@ while running:
                     with open("config.cfg", "w",
                               encoding='utf-8') as config_file:
                         config.write(config_file)
-                
+
                 elif at_button == 2:
                     FPS = (FPS + 1) % len(fps_list)
                     config.set('Settings', 'fps',
@@ -156,7 +156,7 @@ while running:
                     with open("config.cfg", "w",
                               encoding='utf-8') as config_file:
                         config.write(config_file)
-                        
+
                 elif at_button == 3:
                     mode = "menu"
                     transitional_animation()
@@ -165,7 +165,7 @@ while running:
 # EDITOR ===============================================================================================================
 
         elif mode == "editor":
-            #print("editor")
+            # print("editor")
             screen.fill(WHITE)
 
             pg.draw.rect(screen, LIGHT_GRAY,
@@ -190,9 +190,9 @@ while running:
             if not already_generated:
                 if YorN % 2 == 0:
                     Mappy.generate()
-                    #print([(*obj.color, *obj.pos, obj.radius) for obj in Map.obj_list]) это кстати ещё пригодится
+                    # print([(*obj.color, *obj.pos, obj.radius) for obj in Map.obj_list]) это кстати ещё пригодится
 
-                else: #load the map
+                else:  # load the map
                     convert_data(load_data())
 
                 already_generated = True
@@ -208,6 +208,7 @@ while running:
             dy -= cur_player.pos[1]
 
             while step_is_going:
+
                 prevmp = mouse_pos
                 mouse_pos = pg.mouse.get_pos()
                 for ev in pg.event.get():
@@ -230,24 +231,30 @@ while running:
 
                         elif ev.key == pg.K_BACKSPACE:
                             func = func[:-1]
-                            
-                        print(paste(), ev.key,
-                                  ev.mod)
-                        if ev.key == pg.K_v \
-                                and ev.mod == pg.KMOD_LCTRL:
-                            # print(paste())
-                            # if len(clipboard.paste()) <= 200:
+
+                        if ev.key == pg.K_v and ev.mod == pg.KMOD_LCTRL:
                             func += paste()
 
                         keys = pg.key.get_pressed()
 
                         if keys[pg.K_RETURN]:
+                            shift = (WIDTH // 2 - cur_player.pos[0] - dx,
+                                     HEIGHT // 2 - cur_player.pos[1] - dy)
+
+                            for _ in range(100):
+                                pg.time.delay(1)
+                                dx += shift[0] // 100
+                                dy += shift[1] // 100
+                                draw_map(dx, dy, func)
+
+                            dx = WIDTH // 2 - cur_player.pos[0]
+                            dy = HEIGHT // 2 - cur_player.pos[1]
                             cur_player.attack(dx, dy, func)
                             func = ""
 
                 draw_map(dx, dy, func)
                 pg.time.Clock().tick(fps_list[FPS])
-                
+
             step += 1
 
     pg.display.flip()
