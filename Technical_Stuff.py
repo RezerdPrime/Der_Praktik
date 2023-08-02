@@ -51,7 +51,7 @@ screen.fill(WHITE)
 overlay = pg.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(0)
 
-mode = "endscreen" # menu game editor settings endscreen
+mode = "menu" # menu game editor settings endscreen
 running = True
 mouse_pos = (0, 0)
 
