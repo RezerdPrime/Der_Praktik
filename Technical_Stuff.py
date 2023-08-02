@@ -55,7 +55,7 @@ mode = "endscreen" # menu game editor settings endscreen
 running = True
 mouse_pos = (0, 0)
 
-func_speed = 2
+func_speed = 3
 fs_list = [0.25, 0.5, 0.75, 1, 2, 4, 8]
 
 
