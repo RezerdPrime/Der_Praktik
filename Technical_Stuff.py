@@ -50,7 +50,7 @@ screen.fill(WHITE)
 overlay = pg.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(0)
 
-mode = "menu" # menu game editor settings
+mode = "game" # menu game editor settings
 running = True
 mouse_pos = (0, 0)
 
@@ -120,7 +120,7 @@ class Player:
             cur = -int(40 * eval(func.replace("x",str(val / 40))))
 
             Mappy.add(Line((val - 1 - x + WIDTH // 2, buff - y + HEIGHT // 2), (val - x + WIDTH // 2, cur - y + HEIGHT // 2)))
-            draw_map(x - val, y - cur, func)
+            draw_map(x - val, y - cur, func, True)
 
             buff = cur
         Mappy.obj_list = Mappy.obj_list[:indx]
@@ -191,6 +191,7 @@ step = randint(0, 1)
 helpMap = Map()
 func = ""
 func_font = pg.font.Font("fnt.otf", 30)
+avaliable_colors = [Teams[step % 2].col, WHITE, BLACK]
 
 
 # HELPING FUNCTIONS ====================================================================================================
@@ -259,14 +260,19 @@ def convert_data(data : list):
         if len(tupl) == 6 and all([tupl[-1] >= 0] + [tupl[i] >= 0 for i in range(3)]) >= 0:
             Mappy.add(Circle((tupl[:3]), (tupl[3:-1]), tupl[-1]))
 
-def draw_map(x, y, func):
+def draw_map(x, y, func, flag = False):
     screen.fill(WHITE)
     Mappy.draw_all(x, y)
     Teams[0].draw_all(x, y)
     Teams[1].draw_all(x, y)
-    text_surface = func_font.render(func, True, (0, 0, 0))
-    screen.blit(text_surface, (18, HEIGHT - 48))
-    #pg.draw.circle(screen, BLACK, (WIDTH // 2, HEIGHT // 2), 5) добавить флаг
+
+    text_surface = func_font.render('f(x) = ' + func, True, (0, 0, 0))
+    screen.blit(text_surface, (50, HEIGHT - 68))
+    pg.draw.rect(screen, BLACK, (30, HEIGHT - 80, WIDTH - 60, 60), 3)
+
+    if flag:
+        pg.draw.circle(screen, BLACK, (WIDTH // 2, HEIGHT // 2), 5)
+
     pg.display.flip()
 
 
