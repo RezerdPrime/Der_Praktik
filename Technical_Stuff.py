@@ -50,7 +50,7 @@ screen.fill(WHITE)
 overlay = pg.Surface((WIDTH, HEIGHT))
 overlay.set_alpha(0)
 
-mode = "menu" # menu game editor settings
+mode = "endscreen" # menu game editor settings endscreen
 running = True
 mouse_pos = (0, 0)
 
@@ -107,16 +107,16 @@ class Map:
 
 class Player:
 
-    def __init__(self, pos, team : pg.Color):
+    def __init__(self, pos, team : pg.Color, kills = 0):
         self.pos = pos
         self.team = team
+        self.kills = kills
 
     def draw(self, x, y):
         pg.draw.circle(screen, self.team, (self.pos[0] + x, self.pos[1] + y), 20)
 
     def attack(self, x, y, func, func_dir, fs = func_speed):
         val = 0; cur = 0; indx = len(Mappy.obj_list)
-        avaliable_colors[0] = self.team
         buff = -eval(func.replace("x",str(val / 20)))
 
         while is_not_collided():
@@ -133,7 +133,7 @@ class Player:
         Mappy.obj_list = Mappy.obj_list[:indx]
         detonated_pos = (val - x + WIDTH // 2, cur - y + HEIGHT // 2)
 
-        kill_players(detonated_pos)
+        self.kills += kill_players(detonated_pos)
 
         Mappy.add(Circle(WHITE, detonated_pos, 30))
 
@@ -144,6 +144,8 @@ class Player:
         pg.time.delay(1500)
 
 class Team(Map):
+
+    kill_counts = [0 for _ in range(player_count)]
 
     def __init__(self, col : pg.Color):
         super().__init__()
@@ -211,6 +213,11 @@ func = ""
 func_font = pg.font.Font("fnt.otf", 30)
 avaliable_colors = [Teams[step % 2].col, WHITE, BLACK]
 func_dir = 1
+
+
+# ENDSCREEN ============================================================================================================
+
+ES_font = pg.font.Font("fnt.otf", 60)
 
 
 # HELPING FUNCTIONS ====================================================================================================
@@ -327,23 +334,21 @@ def is_not_collided():
 
 def kill_players(det_pos):
 
+    kills = 0
     dist = lambda P, Q: ((P[0] - Q[0])**2 + (P[1] - Q[1])**2)**.5
 
     dist_lst = [[],[]]
     dist_lst[0] = [dist(pl.pos, det_pos) for pl in Teams[0].obj_list]
     dist_lst[1] = [dist(pl.pos, det_pos) for pl in Teams[1].obj_list]
-    #print(dist_lst)
 
     for k in [0, 1]:
         for i in range(len(dist_lst[k])):
             if dist_lst[k][i] <= 50:
-                Teams[k].obj_list.remove(Teams[k].obj_list[i])
-
-    #print("Successful")
-
-
-    '''print( *[dist(pl.pos, det_pos) for pl in Teams[0].obj_list] )
-    print( *[dist(pl.pos, det_pos) for pl in Teams[1].obj_list] )'''
+                killed = Teams[k].obj_list[i]
+                Teams[k].kill_counts[i] += killed.kills
+                Teams[k].obj_list.remove(killed)
+                kills += 1
+    return kills
 
 
 '''def to_theme(*args, theme='light'):
