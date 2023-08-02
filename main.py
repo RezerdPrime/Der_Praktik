@@ -203,7 +203,7 @@ while running:
                 Teams[1].generate(helpMap)
 
             cur_team = Teams[step % 2]
-            cur_player = cur_team.obj_list[randint(0, cur_team.pl_count - 1)]
+            cur_player = cur_team.obj_list[randint(0, len(cur_team.obj_list))]
 
             shift = (WIDTH // 2 - cur_player.pos[0] - dx,
                      HEIGHT // 2 - cur_player.pos[1] - dy)
