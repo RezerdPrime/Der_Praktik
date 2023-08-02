@@ -203,7 +203,7 @@ while running:
                 Teams[1].generate(helpMap)
 
             cur_team = Teams[step % 2]
-            cur_player = cur_team.obj_list[randint(0, len(cur_team.obj_list))]
+            cur_player = cur_team.obj_list[randint(0, len(cur_team.obj_list) - 1)]
 
             shift = (WIDTH // 2 - cur_player.pos[0] - dx,
                      HEIGHT // 2 - cur_player.pos[1] - dy)
@@ -218,6 +218,8 @@ while running:
             dy = HEIGHT // 2 - cur_player.pos[1]
 
             spch = 0
+            avaliable_colors[0] = cur_player.team
+            print(avaliable_colors[0])
 
             while step_is_going:
                 #print(func_dir)
@@ -262,6 +264,25 @@ while running:
                             dx = WIDTH // 2 - cur_player.pos[0]
                             dy = HEIGHT // 2 - cur_player.pos[1]
 
+                        if ev.key == pg.K_F1 and ev.mod == pg.KMOD_LCTRL:
+                            Teams[0].obj_list = []
+                            print(len(Teams[0].obj_list))
+                            mode = "endscreen"
+                            continue
+
+                        if ev.key == pg.K_F2 and ev.mod == pg.KMOD_LCTRL:
+                            Teams[1].obj_list = []
+                            print(len(Teams[1].obj_list))
+                            mode = "endscreen"
+                            continue
+
+                        if ev.key == pg.K_F3 and ev.mod == pg.KMOD_LCTRL:
+                            Teams[0].obj_list = []
+                            Teams[1].obj_list = []
+                            print(len(Teams[0].obj_list), len(Teams[1].obj_list))
+                            mode = "endscreen"
+                            continue
+
                         if ev.unicode.isprintable():
                             func += ev.unicode
 
@@ -295,6 +316,50 @@ while running:
                 pg.time.Clock().tick(fps_list[FPS])
 
             step += 1
+
+            if len(Teams[0].obj_list) == 0 or len(Teams[1].obj_list) == 0:
+                mode = "endscreen"
+                transitional_animation()
+
+
+# ENDSCREEN ============================================================================================================
+
+        elif mode == "endscreen":
+
+            #Teams[1].add(Circle(BLACK, (0,0), 1))
+            screen.fill(WHITE)
+            win_text = ""
+            pos = (0, 0)
+            win_col = GRAY
+
+            if len(Teams[0].obj_list) != 0 and len(Teams[1].obj_list) == 0:
+                win_text = "Team RED wins"
+                win_col = RED
+                pos = (WIDTH // 2 - 220, 50)
+
+            elif len(Teams[0].obj_list) == 0 and len(Teams[1].obj_list) != 0:
+                win_text = "Team BLUE wins"
+                win_col = BLUE
+                pos = (WIDTH // 2 - 230, 50)
+
+            else:
+                win_text = "The Tie"
+                pos = (WIDTH // 2 - 100, 50)
+
+            text_surface = ES_font.render(win_text, True, win_col)
+            screen.blit(text_surface, pos)
+
+            for i in range(player_count):
+                t1 = font28.render(str(i + 1) + ":", True, RED)
+                t2 = font28.render(str(Teams[0].kill_counts[i]), True, GRAY)
+                screen.blit(t1, (100, HEIGHT // 5 + i * 40))
+                screen.blit(t2, (140, HEIGHT // 5 + i * 40))
+
+                t3 = font28.render(":" + str(i + 1), True, BLUE)
+                t4 = font28.render(str(Teams[1].kill_counts[i]), True, GRAY)
+                screen.blit(t3, (WIDTH - 120, HEIGHT // 5 + i * 40))
+                screen.blit(t4, (WIDTH - 160, HEIGHT // 5 + i * 40))
+
 
     pg.display.flip()
     pg.time.Clock().tick(fps_list[FPS])
