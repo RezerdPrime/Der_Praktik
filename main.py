@@ -104,7 +104,7 @@ while running:
             screen.blit(text2, (95, 85))
 
             text2 = font20.render(
-                "Window size change occur after restarting the game!",
+                "All changes occur after restarting the game!",
                 True, RED)
             screen.blit(text2, (75, HEIGHT - 75))
 
@@ -165,6 +165,7 @@ while running:
 # EDITOR ===============================================================================================================
 
         elif mode == "editor":
+            # print("editor")
             screen.fill(WHITE)
 
             pg.draw.rect(screen, LIGHT_GRAY,
@@ -189,10 +190,8 @@ while running:
             if not already_generated:
                 if YorN % 2 == 0:
                     Mappy.generate()
-                    # print([(*obj.color, *obj.pos, obj.radius) for obj in Map.obj_list]) это кстати ещё пригодится
 
-                else:  # load the map
-                    convert_data(load_data())
+                else: convert_data(load_data())
 
                 already_generated = True
 
@@ -218,7 +217,6 @@ while running:
 
             spch = 0
             avaliable_colors[0] = cur_player.team
-            print(avaliable_colors[0])
 
             while step_is_going:
                 #print(func_dir)
@@ -282,7 +280,14 @@ while running:
                             mode = "endscreen"
                             continue
 
-                        if ev.unicode.isprintable() and len(func) < 45:
+
+                        if ev.key == pg.K_s and ev.mod == pg.KMOD_LCTRL:
+                            current_save = datetime.now().strftime("%d-%m-%Y_%H-%M-%S.gpht")
+                            save_file = open(current_save, "w")
+                            obj_data = [(*obj.color, *obj.pos, obj.radius) for obj in Mappy.obj_list]
+                            save_file.write(str(obj_data))
+
+                        if ev.unicode.isprintable():
                             func += ev.unicode
 
                         elif ev.key == pg.K_BACKSPACE:
@@ -318,6 +323,7 @@ while running:
 
             if len(Teams[0].obj_list) == 0 or len(Teams[1].obj_list) == 0:
                 mode = "endscreen"
+                BACK_color = BLACK
                 transitional_animation()
 
 
@@ -343,7 +349,7 @@ while running:
 
             else:
                 win_text = "The Tie"
-                pos = (WIDTH // 2 - 100, 50)
+                pos = (WIDTH // 2 - 110, 50)
 
             text_surface = ES_font.render(win_text, True, win_col)
             screen.blit(text_surface, pos)
@@ -358,6 +364,28 @@ while running:
                 t4 = font28.render(str(Teams[1].kill_counts[i]), True, GRAY)
                 screen.blit(t3, (WIDTH - 120, HEIGHT // 5 + i * 40))
                 screen.blit(t4, (WIDTH - 160, HEIGHT // 5 + i * 40))
+
+            pg.draw.rect(screen, GRAY,
+                         (WIDTH - 195, HEIGHT - 145, 120, 70))
+            pg.draw.rect(screen, LIGHT_GRAY,
+                         (WIDTH - 200, HEIGHT - 150, 120, 70))
+            text2 = font40.render("Back", True, BACK_color)
+            screen.blit(text2, (WIDTH - 140 - text2.get_width() // 2,
+                                HEIGHT - 115 - text2.get_height() // 2))
+
+            if ((WIDTH - 200 < mouse_pos[0] < WIDTH - 80)
+                    and (HEIGHT - 150 < mouse_pos[1] < HEIGHT - 80)):
+                BACK_color = WHITE
+                at_button = True
+            else:
+                BACK_color = BLACK
+                at_button = False
+
+            if event.type == pg.MOUSEBUTTONDOWN and at_button:
+                transitional_animation()
+                already_generated = False
+                choose = True
+                mode = "menu"
 
 
     pg.display.flip()
