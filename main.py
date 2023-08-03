@@ -263,24 +263,24 @@ while running:
                             dx = WIDTH // 2 - cur_player.pos[0]
                             dy = HEIGHT // 2 - cur_player.pos[1]
 
-                        # if ev.key == pg.K_F1 and ev.mod == pg.KMOD_LCTRL:
-                        #     Teams[0].obj_list = []
-                        #     print(len(Teams[0].obj_list))
-                        #     mode = "endscreen"
-                        #     continue
+                        if ev.key == pg.K_F1 and ev.mod == pg.KMOD_LCTRL:
+                            Teams[0].obj_list = []
+                            print(len(Teams[0].obj_list))
+                            mode = "endscreen"
+                            continue
 
-                        # if ev.key == pg.K_F2 and ev.mod == pg.KMOD_LCTRL:
-                        #     Teams[1].obj_list = []
-                        #     print(len(Teams[1].obj_list))
-                        #     mode = "endscreen"
-                        #     continue
+                        if ev.key == pg.K_F2 and ev.mod == pg.KMOD_LCTRL:
+                            Teams[1].obj_list = []
+                            print(len(Teams[1].obj_list))
+                            mode = "endscreen"
+                            continue
 
-                        # if ev.key == pg.K_F3 and ev.mod == pg.KMOD_LCTRL:
-                        #     Teams[0].obj_list = []
-                        #     Teams[1].obj_list = []
-                        #     print(len(Teams[0].obj_list), len(Teams[1].obj_list))
-                        #     mode = "endscreen"
-                        #     continue
+                        if ev.key == pg.K_F3 and ev.mod == pg.KMOD_LCTRL:
+                            Teams[0].obj_list = []
+                            Teams[1].obj_list = []
+                            print(len(Teams[0].obj_list), len(Teams[1].obj_list))
+                            mode = "endscreen"
+                            continue
 
                         if ev.unicode.isprintable() and len(func) < 45:
                             func += ev.unicode
