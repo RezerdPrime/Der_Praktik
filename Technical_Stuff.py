@@ -2,7 +2,7 @@ import pygame as pg
 import configparser
 from random import randint
 from math import *
-from clipboard import paste
+import clipboard
 from os import system
 from datetime import datetime
 from sys import exc_info
