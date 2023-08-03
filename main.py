@@ -41,6 +41,7 @@ while running:
                     overlay2.set_alpha(100)
                     screen.blit(overlay2, (0, 0))
 
+                    choose = True
                     while choose:
                         pg.draw.rect(screen, WHITE, (WIDTH // 2 - 340, HEIGHT // 2 - 160, 700, 150))
                         pg.draw.rect(screen, LIGHT_GRAY, (WIDTH // 2 - 350, HEIGHT // 2 - 170, 700, 150))
@@ -56,7 +57,6 @@ while running:
 
                         pg.display.flip()
                         for ev in pg.event.get():
-
                             if event.type == pg.QUIT: exit()
 
                             if ev.type == pg.KEYDOWN:
@@ -70,6 +70,12 @@ while running:
                                     NO_color = WHITE
 
                                 keys = pg.key.get_pressed()
+                                if keys[pg.K_ESCAPE]:
+                                    choose = False
+                                    pos_flag = -1
+                                    mode = "menu"
+                                    break
+                                
                                 if keys[pg.K_RETURN]:
                                     choose = False
 
@@ -99,9 +105,10 @@ while running:
             screen.blit(text2, (95, 85))
 
             text2 = font20.render(
-                "All changes occur after restarting the game!",
+                "Screen size (resolution) change "
+                "occur after restarting the game!",
                 True, RED)
-            screen.blit(text2, (75, HEIGHT - 75))
+            screen.blit(text2, (75, HEIGHT - 95)))
 
             pg.draw.rect(screen, LIGHT_GRAY, (75, 165, 500, 70))
             text2 = font40.render("FPS" + " " * 23
@@ -226,7 +233,7 @@ while running:
                 pg.time.delay(1)
                 dx += shift[0] // 100
                 dy += shift[1] // 100
-                draw_map(dx, dy, func, 0, func_speed)
+                draw_map(dx, dy, func, 0, func_speed, step)
 
             dx = WIDTH // 2 - cur_player.pos[0]
             dy = HEIGHT // 2 - cur_player.pos[1]
@@ -338,7 +345,7 @@ while running:
                             func = ""
                             step_is_going = False
 
-                draw_map(dx, dy, func, spch, func_speed)
+                draw_map(dx, dy, func, spch, func_speed, step)
                 pg.time.Clock().tick(fps_list[FPS])
 
             cur_player.direction = 0
