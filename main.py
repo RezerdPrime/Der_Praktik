@@ -1,11 +1,9 @@
 from Technical_Stuff import *
 
 while running:
-
     prevmp = mouse_pos
     mouse_pos = pg.mouse.get_pos()
     for event in pg.event.get():
-
         if event.type == pg.QUIT:
             running = False
 
@@ -20,19 +18,16 @@ while running:
                     EDITOR_color = (0, 0, 0)
                     SETTINGS_color = (0, 0, 0)
                     pos_flag = 0
-
                 elif (HEIGHT - 70) // 2 < mouse_pos[1] < (HEIGHT - 70) // 2 + 80:
                     PLAY_color = (0, 0, 0)
                     EDITOR_color = (255, 255, 255)
                     SETTINGS_color = (0, 0, 0)
                     pos_flag = 1
-
                 elif (HEIGHT + 130) // 2 < mouse_pos[1] < (HEIGHT + 130) // 2 + 80:
                     PLAY_color = (0, 0, 0)
                     EDITOR_color = (0, 0, 0)
                     SETTINGS_color = (255, 255, 255)
                     pos_flag = 2
-
             else:
                 PLAY_color = (0, 0, 0)
                 EDITOR_color = (0, 0, 0)
@@ -166,21 +161,42 @@ while running:
 
         elif mode == "editor":
             # print("editor")
-            screen.fill(WHITE)
-
-            pg.draw.rect(screen, LIGHT_GRAY,
-                         ((WIDTH - 174) // 2,
-                          (HEIGHT - 270) // 2, 174, 70))
-            pg.draw.rect(screen, (153, 76, 0),
-                         (WIDTH // 2 - 10, 0, 20, HEIGHT // 2 - 65))
-            pg.draw.rect(screen, (160, 80, 0),
-                         (WIDTH // 2 - 15, HEIGHT // 2 - 138,
-                          30, 76))
-            screen.blit(screen, (0, 0))
-
-            if event.type == pg.MOUSEBUTTONDOWN:
-                mode = "menu"
-                transitional_animation()
+            go = True
+            while go:
+                for ev in pg.event.get():
+                    if (ev.type == pg.KEYDOWN
+                        or ev.type == pg.MOUSEBUTTONDOWN):
+                        mode = "menu"
+                        go = False
+                        
+                        break
+                        
+                screen.fill(BLACK)
+    
+                pg.draw.rect(screen, GRAY,
+                             ((WIDTH - 174) // 2,
+                              (HEIGHT - 270) // 2, 174, 70))
+                pg.draw.rect(screen, (163, 76, 0),
+                             (WIDTH // 2 - 10, 0, 20, HEIGHT // 2 - 65))
+                pg.draw.rect(screen, (170, 80, 0),
+                             (WIDTH // 2 - 15, HEIGHT // 2 - 138,
+                              30, 76))
+                screen.blit(screen, (0, 0))
+                
+                text2 = font48.render("NOT READY YET", True,
+                                      (randint(0, 255), 0, 0))
+                screen.blit(text2, (WIDTH // 2 - text2.get_width() // 2,
+                                    HEIGHT // 2 + 50))
+                text2 = font28.render(
+                    "therefore, look at the brick suspended on a rope",
+                    True, (randint(0, 255), 0, 0))
+                screen.blit(text2, (WIDTH // 2 - text2.get_width() // 2,
+                                    HEIGHT // 2 + 120))
+    
+                pg.display.flip()
+            
+            transitional_animation()
+            menu_interface(PLAY_color, EDITOR_color, SETTINGS_color)
 
 
 # GAME =================================================================================================================
@@ -222,6 +238,7 @@ while running:
                 #print(func_dir)
                 prevmp = mouse_pos
                 mouse_pos = pg.mouse.get_pos()
+                cur_player.direction = 2 if func_dir > 0 else 1
                 for ev in pg.event.get():
                     if ev.type == pg.QUIT: exit()
 
@@ -252,7 +269,6 @@ while running:
                         mouse_mode = 0
 
                     if ev.type == pg.KEYDOWN:
-
                         if ev.key == pg.K_LEFT: func_dir = -1
 
                         if ev.key == pg.K_RIGHT: func_dir = 1
@@ -261,24 +277,24 @@ while running:
                             dx = WIDTH // 2 - cur_player.pos[0]
                             dy = HEIGHT // 2 - cur_player.pos[1]
 
-                        if ev.key == pg.K_F1 and ev.mod == pg.KMOD_LCTRL:
-                            Teams[0].obj_list = []
-                            print(len(Teams[0].obj_list))
-                            mode = "endscreen"
-                            continue
+                        # if ev.key == pg.K_F1 and ev.mod == pg.KMOD_LCTRL:
+                        #     Teams[0].obj_list = []
+                        #     print(len(Teams[0].obj_list))
+                        #     mode = "endscreen"
+                        #     continue
 
-                        if ev.key == pg.K_F2 and ev.mod == pg.KMOD_LCTRL:
-                            Teams[1].obj_list = []
-                            print(len(Teams[1].obj_list))
-                            mode = "endscreen"
-                            continue
+                        # if ev.key == pg.K_F2 and ev.mod == pg.KMOD_LCTRL:
+                        #     Teams[1].obj_list = []
+                        #     print(len(Teams[1].obj_list))
+                        #     mode = "endscreen"
+                        #     continue
 
-                        if ev.key == pg.K_F3 and ev.mod == pg.KMOD_LCTRL:
-                            Teams[0].obj_list = []
-                            Teams[1].obj_list = []
-                            print(len(Teams[0].obj_list), len(Teams[1].obj_list))
-                            mode = "endscreen"
-                            continue
+                        # if ev.key == pg.K_F3 and ev.mod == pg.KMOD_LCTRL:
+                        #     Teams[0].obj_list = []
+                        #     Teams[1].obj_list = []
+                        #     print(len(Teams[0].obj_list), len(Teams[1].obj_list))
+                        #     mode = "endscreen"
+                        #     continue
 
 
                         if ev.key == pg.K_s and ev.mod == pg.KMOD_LCTRL:
@@ -293,8 +309,14 @@ while running:
                         elif ev.key == pg.K_BACKSPACE:
                             func = func[:-1]
 
-                        if ev.key == pg.K_v and ev.mod == pg.KMOD_LCTRL:
-                            func += paste()
+                        if ev.mod == pg.KMOD_LCTRL:
+                            if ev.key == pg.K_x:
+                                clipboard.copy(func)
+                                func = ""
+                            elif ev.key == pg.K_c:
+                                clipboard.copy(func)
+                            elif ev.key == pg.K_v:
+                                func += clipboard.paste()
 
                         keys = pg.key.get_pressed()
 
@@ -306,7 +328,7 @@ while running:
                                 #pg.time.delay(1)
                                 dx += shift[0] // 100
                                 dy += shift[1] // 100
-                                draw_map(dx, dy, func, spch, func_speed)
+                                draw_map(dx, dy, func, spch, func_speed, step)
 
                             dx = WIDTH // 2 - cur_player.pos[0]
                             dy = HEIGHT // 2 - cur_player.pos[1]
@@ -319,6 +341,7 @@ while running:
                 draw_map(dx, dy, func, spch, func_speed)
                 pg.time.Clock().tick(fps_list[FPS])
 
+            cur_player.direction = 0
             step += 1
 
             if len(Teams[0].obj_list) == 0 or len(Teams[1].obj_list) == 0:
