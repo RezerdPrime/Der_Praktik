@@ -116,19 +116,19 @@ class Player:
 
     def draw(self, x, y):
         pg.draw.circle(screen, self.team, (self.pos[0] + x, self.pos[1] + y), 20)
-        num = font28.render(str(self.indx + 1), True, YES_color)
-        screen.blit(num, (self.pos[0] + x - 7, self.pos[1] + y - 19))
+        #num = font28.render(str(self.indx + 1), True, BLACK)
+        #screen.blit(num, (self.pos[0] + x - 7, self.pos[1] + y - 19))
 
     def attack(self, x, y, func, func_dir, fs = func_speed):
-        val = func_dir;
-        cur = 0;
+        val = func_dir
+        cur = 0
         dcur = 0
         indx = len(Mappy.obj_list)
         avaliable_colors[0] = self.team
         # buff = -eval(func.replace("x", str(val / 20)))
         buff = evaluated_value(func, val)
 
-        # print(buff, lasterr)
+        #print(buff, lasterr)
         if isinstance(buff, str):
             while ((isinstance(buff, str) and
                     lasterr in ("Complex", "Value", "ZeroDiv"))
@@ -145,7 +145,10 @@ class Player:
             dcur = buff
             buff = 0
 
-        while is_not_collided():
+        while is_not_collided() and \
+                abs(val - x + WIDTH // 2) < WIDTH * 2 and \
+                abs(cur - y + HEIGHT // 2) < HEIGHT * 2:
+
             pg.time.delay(round(4 / fs_list[fs]))
             val += func_dir
             cur = evaluated_value(func, val)
@@ -154,7 +157,7 @@ class Player:
                 break
 
             cur -= dcur
-            print(cur - buff)
+            #print(cur - buff)
             if abs(val) <= 5 and abs(buff - cur) > 1:
                 continue
 
@@ -164,6 +167,9 @@ class Player:
                             cur - y + HEIGHT // 2)))
             draw_map(x - val, y - cur, func, 0, fs, True)
             buff = cur
+
+            print((val - x + WIDTH // 2,
+                         cur - y + HEIGHT // 2))
 
         Mappy.obj_list = Mappy.obj_list[:indx]
         detonated_pos = (val - x + WIDTH // 2,
@@ -344,6 +350,11 @@ def draw_map(x, y, func, speed_choice, fs=func_speed, flag = False):
     screen.blit(text_surface, (50, HEIGHT - 68))
     pg.draw.rect(screen, BLACK, (30, HEIGHT - 80, WIDTH - 60, 60), 3)
 
+    error = evaluated_value(func, 0)
+    if func and isinstance(error, str):
+        text_surface = font28.render(error, True, RED)
+        screen.blit(text_surface, (WIDTH - 400, HEIGHT - 68))
+
     LEFTARROW = (BLACK,)
     RIGHTARROW = (BLACK,)
     if speed_choice == 1:
@@ -399,7 +410,7 @@ def kill_players(det_pos):
 def evaluated_value(func: str, val):
     global lasterr
 
-    lasterr = ""
+    #lasterr = ""
     for f in xxx:
         if f in func:
             func = func.replace(f, f[:f.index('x')] + " "
