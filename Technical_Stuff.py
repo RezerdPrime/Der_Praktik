@@ -116,6 +116,8 @@ class Player:
 
     def draw(self, x, y):
         pg.draw.circle(screen, self.team, (self.pos[0] + x, self.pos[1] + y), 20)
+        num = font28.render(str(self.indx + 1), True, YES_color)
+        screen.blit(num, (self.pos[0] + x - 7, self.pos[1] + y - 19))
 
     def attack(self, x, y, func, func_dir, fs = func_speed):
         val = func_dir;
