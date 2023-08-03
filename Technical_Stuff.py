@@ -19,6 +19,7 @@ WINDOW_TITLE = list(map(lambda x: x.strip(),
 #theme = bool(int(config['Settings']['is_dark']))
 SPLASHES = WINDOW_TITLE[randint(0, len(WINDOW_TITLE) - 1)]
 pg.display.set_caption(SPLASHES)
+font48 = pg.font.Font("fnt.otf", 48)
 font40 = pg.font.Font("fnt.otf", 40)
 font28 = pg.font.Font("fnt.otf", 28)
 font20 = pg.font.Font(None, 20)
@@ -56,7 +57,7 @@ mode = "menu" # menu game editor settings endscreen
 running = True
 mouse_pos = (0, 0)
 
-func_speed = 2
+func_speed = 3
 fs_list = [0.25, 0.5, 0.75, 1, 2, 4, 8]
 
 
@@ -108,18 +109,26 @@ class Map:
 
 
 class Player:
-
     def __init__(self, pos, team : pg.Color, indx):
         self.pos = pos
         self.team = team
         self.indx = indx
+        self.direction = 0
 
     def draw(self, x, y):
         pg.draw.circle(screen, self.team, (self.pos[0] + x, self.pos[1] + y), 20)
         #num = font28.render(str(self.indx + 1), True, BLACK)
         #screen.blit(num, (self.pos[0] + x - 7, self.pos[1] + y - 19))
 
+        if self.direction == 1:
+            text = font40.render("<", True, BLACK)
+            screen.blit(text, (self.pos[0] + x - 48, self.pos[1] + y - 28))
+        elif self.direction == 2:
+            text = font40.render(">", True, BLACK)
+            screen.blit(text, (self.pos[0] + x + 28, self.pos[1] + y - 28))
+
     def attack(self, x, y, func, func_dir, fs = func_speed):
+        self.direction = 0
         val = func_dir
         cur = 0
         dcur = 0
@@ -132,14 +141,13 @@ class Player:
         if isinstance(buff, str):
             while ((isinstance(buff, str) and
                     lasterr in ("Complex", "Value", "ZeroDiv"))
-                   and abs(val) < 1000):
+                   and abs(val) < 1.5 * WIDTH):
                 val += func_dir
                 buff = evaluated_value(func, val)
 
             buff = 0
-            if val == 1000:
+            if abs(val) >= 1.5 * WIDTH):
                 val = func_dir * 21
-                draw_map(x - val, y - cur, func, 0, fs, True)
 
         if not isinstance(buff, str):
             dcur = buff
@@ -165,29 +173,26 @@ class Player:
                             buff - y + HEIGHT // 2),
                            (val - x + WIDTH // 2,
                             cur - y + HEIGHT // 2)))
-            draw_map(x - val, y - cur, func, 0, fs, True)
+            draw_map(x - val, y - cur, func, 0, fs, self.team != RED, True)
             buff = cur
-
-            print((val - x + WIDTH // 2,
-                         cur - y + HEIGHT // 2))
 
         Mappy.obj_list = Mappy.obj_list[:indx]
         detonated_pos = (val - x + WIDTH // 2,
                          cur - y + HEIGHT // 2)
 
-        Teams[0 if self.team == RED else 1].kill_counts[self.indx] \
+        Teams[self.team != RED].kill_counts[self.indx] \
             += kill_players(detonated_pos)
 
         Mappy.add(Circle(WHITE, detonated_pos, 30))
 
-        draw_map(x - val, y - cur, func, 0, fs, True)
+        draw_map(x - val, y - cur, func, 0, fs, self.team != RED, True)
         pg.draw.circle(screen, WHITE, (WIDTH // 2, HEIGHT // 2), 30)
-        screen.blit(screen, (0,0))
+        screen.blit(screen, (0, 0))
         pg.display.flip()
         pg.time.delay(1500)
 
-class Team(Map):
 
+class Team(Map):
     def __init__(self, col : pg.Color):
         super().__init__()
         self.col = col
@@ -340,7 +345,7 @@ def convert_data(data : list):
             Mappy.add(Circle((tupl[:3]), (tupl[3:-1]), tupl[-1]))
 
 
-def draw_map(x, y, func, speed_choice, fs=func_speed, flag = False):
+def draw_map(x, y, func, speed_choice, fs=func_speed, step=step, flag = False):
     screen.fill(WHITE)
     Mappy.draw_all(x, y)
     Teams[0].draw_all(x, y)
@@ -372,6 +377,28 @@ def draw_map(x, y, func, speed_choice, fs=func_speed, flag = False):
     text_surface = font28.render(' > ', True, *RIGHTARROW)
     screen.blit(text_surface, (WIDTH - 50, 60))
 
+    # Показатель ходящей команды
+    text_surface = font48.render(("RED" if step % 2 == 0 else "BLUE")
+                                 + " team's turn",
+                                 True, Teams[step % 2].col)
+    screen.blit(text_surface,
+                (WIDTH // 2 - text_surface.get_width() // 2, 25))
+    
+    pg.draw.rect(screen, LIGHT_GRAY,
+                 (30, HEIGHT - 118, 4 + player_count * 14, 28))
+    pg.draw.rect(screen, LIGHT_GRAY,
+                 (WIDTH - 34 - player_count * 14, HEIGHT - 118,
+                  4 + player_count * 14, 28))
+    
+    for i in range(len(Teams[1].obj_list)):
+        pg.draw.rect(screen, Teams[1].col,
+                     (34 + 14 * (player_count - i - 1), HEIGHT - 114, 10, 20))
+    
+    for i in range(len(Teams[0].obj_list)):
+        pg.draw.rect(screen, Teams[0].col,
+                     (WIDTH - 30 - (player_count - i) * 14,
+                      HEIGHT - 114, 10, 20))
+  
     if flag:
         pg.draw.circle(screen, BLACK, (WIDTH // 2, HEIGHT // 2), 5)
 
@@ -390,7 +417,6 @@ def is_not_collided():
 
 
 def kill_players(det_pos):
-
     kills = 0
     dist = lambda P, Q: ((P[0] - Q[0])**2 + (P[1] - Q[1])**2)**.5
 
@@ -410,7 +436,7 @@ def kill_players(det_pos):
 def evaluated_value(func: str, val):
     global lasterr
 
-    #lasterr = ""
+    lasterr = ""
     for f in xxx:
         if f in func:
             func = func.replace(f, f[:f.index('x')] + " "
